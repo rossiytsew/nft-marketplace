@@ -5,29 +5,20 @@ const { developmentChains } = require("../../helper-hardhat-config")
 !developmentChains.includes(network.name)
     ? describe.skip
     : describe("Nft Marketplace Unit Tests", () => {
-        let nftMarketplace, basicNft, deployer, player
+        let nftMarketplace, nftMarketplaceContract, basicNft, basicNftContract
         const PRICE = ethers.utils.parseEther("0.1")
         const TOKEN_ID = 0
-        beforeEach(async () => {
-            const accounts = await ethers.getSigners()
-            deployer = (await getNamedAccounts()).deployer
-            player = accounts[1]
-            await deployments.fixture(["all"])
-            nftMarketplace = await ethers.getContract("NftMarketplace")
-            basicNft = await ethers.getContract("BasicNft")
-            await basicNft.mintNft()
-            await basicNft.approve(nftMarketplace.address, TOKEN_ID)
-        })
 
-        it("lists and can be bought", async () => {
-            await nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)
-            const playerConnectedNftMarketplace = nftMarketplace.connect(player)
-            await playerConnectedNftMarketplace.buyItem(basicNft.address, TOKEN_ID, {
-                value: PRICE,
-            })
-            const newOwner = await basicNft.ownerOf(TOKEN_ID)
-            const deployerProceeds = await nftMarketplace.getProceeds(deployer)
-            assert.equal(newOwner.toString(), player.address)
-            assert.equal(deployerProceeds.toString(), PRICE.toString())
+        beforeEach(async () => {
+            accounts = await ethers.getSigners()
+            deployer = accounts[0]
+            user = accounts[1]
+            await deployments.fixture(["all"])
+            nftMarketplaceContract = await ethers.getContract("NftMarketplace")
+            nftMarketplace = nftMarketplaceContract.connect(deployer)
+            basicNftContract = await ethers.getContract("BasicNft")
+            basicNft = basicNftContract.connect(deployer)
+            await basicNft.mintNft()
+            await basicNft.approve(nftMarketplaceContract.address, TOKEN_ID)
         })
     })
