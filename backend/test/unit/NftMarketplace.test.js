@@ -21,4 +21,15 @@ const { developmentChains } = require("../../helper-hardhat-config")
             await basicNft.mintNft()
             await basicNft.approve(nftMarketplaceContract.address, TOKEN_ID)
         })
+
+        describe("listItem", () => {
+            it("emits an event after listing an item", async () => {
+                expect(await nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)).to.emit("ItemListed")
+            })
+            it("only exclusive items can be listed", async () => {
+                await nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)
+                const error = `NftMarketplace__AlreadyListed("${basicNft.address}", ${TOKEN_ID})`
+                await expect(nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)).to.be.revertedWith(error)
+            })
+        })
     })
