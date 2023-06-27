@@ -31,5 +31,10 @@ const { developmentChains } = require("../../helper-hardhat-config")
                 const error = `NftMarketplace__AlreadyListed("${basicNft.address}", ${TOKEN_ID})`
                 await expect(nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)).to.be.revertedWith(error)
             })
+            it("exclusively allows owners to list", async () => {
+                nftMarketplace = nftMarketplaceContract.connect(user)
+                await basicNft.approve(user.address, TOKEN_ID)
+                await expect(nftMarketplace.listItem(basicNft.address, TOKEN_ID, PRICE)).to.be.revertedWith("NotOwner")
+            })
         })
     })
